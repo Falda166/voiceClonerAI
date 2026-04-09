@@ -29,3 +29,4 @@ Dann öffnen:
 - Beim ersten Start lädt das Backendmodell (**xtts_v2**) herunter. Das kann dauern.
 - CPU ist möglich, aber langsam. Für bessere Performance GPU-Setup verwenden.
 - Nur Audio verwenden, für das du die Rechte hast.
+- Upload-Limit im Frontend-Proxy (Nginx) ist auf **256 MB** gesetzt (`client_max_body_size`).

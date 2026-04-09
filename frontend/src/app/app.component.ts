@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -50,8 +50,12 @@ export class AppComponent {
         this.outputAudioUrl = URL.createObjectURL(blob);
         this.loading = false;
       },
-      error: (err) => {
-        this.error = err?.error?.detail ?? 'Klonen fehlgeschlagen. Prüfe Backend-Logs.';
+      error: (err: HttpErrorResponse) => {
+        if (err.status === 413) {
+          this.error = 'Datei zu groß. Bitte kürzere/kleinere Referenz-Audio verwenden (Limit aktuell: 256 MB).';
+        } else {
+          this.error = err?.error?.detail ?? 'Klonen fehlgeschlagen. Prüfe Backend-Logs.';
+        }
         this.loading = false;
       }
     });
