@@ -30,4 +30,4 @@ Dann öffnen:
 - CPU ist möglich, aber langsam. Für bessere Performance GPU-Setup verwenden.
 - Nur Audio verwenden, für das du die Rechte hast.
 - Das Backend konvertiert Uploads per `ffmpeg` nach WAV (24kHz/Mono), damit auch MP3 stabil funktioniert.
-- Frontend-Nginx ist auf `client_max_body_size 0` gesetzt (kein Nginx-Uploadlimit). Wenn du weiterhin 413 bekommst: unbedingt neu bauen mit `docker compose up --build`.
+- Frontend-Nginx akzeptiert Uploads bis **2 GB** (`client_max_body_size 2g`). Wenn du weiterhin 413 bekommst: neu bauen mit `docker compose up --build --force-recreate`.

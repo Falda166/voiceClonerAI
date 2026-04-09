@@ -52,7 +52,7 @@ export class AppComponent {
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 413) {
-          this.error = 'Upload zu groß für den Proxy. Bitte Container neu bauen (`docker compose up --build`) oder kleinere Datei verwenden.';
+          this.error = 'Upload zu groß (aktuelles Limit: 2 GB). Bitte Datei verkleinern oder Nginx-Limit weiter erhöhen.';
         } else {
           this.error = err?.error?.detail ?? 'Klonen fehlgeschlagen. Prüfe Backend-Logs.';
         }

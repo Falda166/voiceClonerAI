@@ -73,7 +73,11 @@ async def clone_voice(
     suffix = Path(reference_audio.filename or "ref.wav").suffix or ".wav"
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as ref_file:
-        ref_file.write(await reference_audio.read())
+        while True:
+            chunk = await reference_audio.read(1024 * 1024)
+            if not chunk:
+                break
+            ref_file.write(chunk)
         reference_path = Path(ref_file.name)
 
     with tempfile.NamedTemporaryFile(delete=False, suffix=".wav", dir=OUTPUT_DIR) as out_file:
