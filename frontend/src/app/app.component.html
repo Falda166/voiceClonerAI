@@ -1,0 +1,36 @@
+<main class="container">
+  <h1>🎙️ Voice Cloner</h1>
+  <p>Lade ein Sprachbeispiel hoch und erzeuge daraus eine neue Aufnahme mit eigenem Text.</p>
+
+  <label>
+    Referenz-Audio (WAV/MP3)
+    <input type="file" accept="audio/*" (change)="onFileSelected($event)">
+  </label>
+
+  <label>
+    Sprache
+    <select [(ngModel)]="language">
+      <option value="de">Deutsch</option>
+      <option value="en">Englisch</option>
+      <option value="fr">Französisch</option>
+      <option value="es">Spanisch</option>
+      <option value="it">Italienisch</option>
+    </select>
+  </label>
+
+  <label>
+    Text für die Ausgabe
+    <textarea rows="5" [(ngModel)]="text"></textarea>
+  </label>
+
+  <button (click)="cloneVoice()" [disabled]="loading">
+    {{ loading ? 'Klonen läuft…' : 'Stimme klonen' }}
+  </button>
+
+  <p class="error" *ngIf="error">{{ error }}</p>
+
+  <section *ngIf="outputAudioUrl" class="result">
+    <h2>Ergebnis</h2>
+    <audio [src]="outputAudioUrl" controls></audio>
+  </section>
+</main>
