@@ -1,0 +1,54 @@
+:host {
+  display: block;
+  font-family: Arial, sans-serif;
+  color: #111827;
+}
+
+.container {
+  max-width: 760px;
+  margin: 2rem auto;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+label {
+  display: block;
+  margin-bottom: 1rem;
+  font-weight: 600;
+}
+
+input,
+select,
+textarea,
+button {
+  margin-top: 0.5rem;
+  width: 100%;
+  padding: 0.65rem;
+  border-radius: 8px;
+  border: 1px solid #d1d5db;
+  font-size: 1rem;
+}
+
+button {
+  cursor: pointer;
+  color: white;
+  background: #4f46e5;
+  border: none;
+  font-weight: 700;
+}
+
+button[disabled] {
+  background: #9ca3af;
+}
+
+.error {
+  color: #b91c1c;
+  font-weight: 700;
+}
+
+.result {
+  margin-top: 1rem;
+}
