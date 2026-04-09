@@ -1,0 +1,24 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: voice-cloner-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - OUTPUT_DIR=/tmp/outputs
+      - VOICE_MODEL=tts_models/multilingual/multi-dataset/xtts_v2
+    volumes:
+      - voice_outputs:/tmp/outputs
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: voice-cloner-frontend
+    depends_on:
+      - backend
+    ports:
+      - "8080:80"
+
+volumes:
+  voice_outputs:
