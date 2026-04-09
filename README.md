@@ -19,7 +19,7 @@ Dann öffnen:
 
 ## Nutzung
 
-1. Im Web-UI Referenz-Audio hochladen.
+1. Im Web-UI Referenz-Audio hochladen (WAV oder MP3).
 2. Sprache und Zieltext eingeben.
 3. **Stimme klonen** klicken.
 4. Ergebnis als Audio abspielen.
@@ -29,4 +29,5 @@ Dann öffnen:
 - Beim ersten Start lädt das Backendmodell (**xtts_v2**) herunter. Das kann dauern.
 - CPU ist möglich, aber langsam. Für bessere Performance GPU-Setup verwenden.
 - Nur Audio verwenden, für das du die Rechte hast.
-- Upload-Limit im Frontend-Proxy (Nginx) ist auf **256 MB** gesetzt (`client_max_body_size`).
+- Das Backend konvertiert Uploads per `ffmpeg` nach WAV (24kHz/Mono), damit auch MP3 stabil funktioniert.
+- Frontend-Nginx ist auf `client_max_body_size 0` gesetzt (kein Nginx-Uploadlimit). Wenn du weiterhin 413 bekommst: unbedingt neu bauen mit `docker compose up --build`.

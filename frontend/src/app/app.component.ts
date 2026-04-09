@@ -52,7 +52,7 @@ export class AppComponent {
       },
       error: (err: HttpErrorResponse) => {
         if (err.status === 413) {
-          this.error = 'Datei zu groß. Bitte kürzere/kleinere Referenz-Audio verwenden (Limit aktuell: 256 MB).';
+          this.error = 'Upload zu groß für den Proxy. Bitte Container neu bauen (`docker compose up --build`) oder kleinere Datei verwenden.';
         } else {
           this.error = err?.error?.detail ?? 'Klonen fehlgeschlagen. Prüfe Backend-Logs.';
         }
