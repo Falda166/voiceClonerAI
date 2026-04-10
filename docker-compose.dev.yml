@@ -1,0 +1,14 @@
+services:
+  backend:
+    volumes:
+      - ./backend/app:/app/app
+      - ./backend/tests:/app/tests
+    command: ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000", "--reload"]
+  frontend:
+    build:
+      context: ./frontend
+    command: ["sh", "-c", "npm install && npm run start"]
+    volumes:
+      - ./frontend:/app
+    ports:
+      - "4200:4200"

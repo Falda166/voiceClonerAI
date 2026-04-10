@@ -1,33 +1,41 @@
-# VoiceClonerAI (Python + Angular + Docker)
+# OpenAutoHAB AI
 
-Dieses Projekt enthält:
+OpenAutoHAB AI is a self-hostable orchestration platform for safe AI-assisted openHAB bootstrap with HomeMatic integration.
 
-- **Python/FastAPI Backend** für Voice-Cloning über Coqui XTTS
-- **Angular Webapp** zum Hochladen einer Referenz-Audio und Eingeben von Text
-- **Docker Compose** für den One-Command-Start
+## Why monorepo
+This project uses a **monorepo** to keep backend, frontend, deployment, and architecture docs versioned together for deterministic releases and reproducible local demos.
 
-## Start
-
+## Quick start
 ```bash
+cp .env.example .env
 docker compose up --build
 ```
 
-Dann öffnen:
+- UI: http://localhost:8080
+- API: http://localhost:8080/api/v1/health
 
-- Frontend: http://localhost:8080
-- Backend Health: http://localhost:8000/api/health
+Default admin login (dev only):
+- `admin` / `admin123`
 
-## Nutzung
+## Core safety controls
+- Global dry-run defaults.
+- Explicit approval entities before execution.
+- Audit logs for every write.
+- Rollback snapshot generated per execution plan.
+- AI output is structured + validated before persistence.
 
-1. Im Web-UI Referenz-Audio hochladen (WAV oder MP3).
-2. Sprache und Zieltext eingeben.
-3. **Stimme klonen** klicken.
-4. Ergebnis als Audio abspielen.
+## Repo layout
+- `backend/` FastAPI orchestration API + adapters + validation.
+- `frontend/` Angular operations UI.
+- `docs/` architecture, ADRs, threat model, deployment, user docs.
+- `deploy/` reverse proxy configuration.
+- `scripts/` bootstrap and seed utilities.
 
-## Hinweise
+## Local demo flow
+1. Login in UI.
+2. Run discovery job for your local CIDR (safe plugin mode).
+3. Load discovered devices.
+4. Generate recommendation for a device through API.
+5. Create approval and execute plan.
 
-- Beim ersten Start lädt das Backendmodell (**xtts_v2**) herunter. Das kann dauern.
-- CPU ist möglich, aber langsam. Für bessere Performance GPU-Setup verwenden.
-- Nur Audio verwenden, für das du die Rechte hast.
-- Das Backend konvertiert Uploads per `ffmpeg` nach WAV (24kHz/Mono), damit auch MP3 stabil funktioniert.
-- Frontend-Nginx akzeptiert Uploads bis **2 GB** (`client_max_body_size 2g`). Wenn du weiterhin 413 bekommst: neu bauen mit `docker compose up --build --force-recreate`.
+See `docs/user/first-deployment.md` for detailed walkthrough.

@@ -1,36 +1,47 @@
-<main class="container">
-  <h1>🎙️ Voice Cloner</h1>
-  <p>Lade ein Sprachbeispiel hoch und erzeuge daraus eine neue Aufnahme mit eigenem Text.</p>
+<main class="layout">
+  <header>
+    <h1>OpenAutoHAB AI</h1>
+    <p>Safe AI-assisted openHAB bootstrap with mandatory approvals.</p>
+  </header>
 
-  <label>
-    Referenz-Audio (WAV/MP3)
-    <input type="file" accept="audio/*" (change)="onFileSelected($event)">
-  </label>
+  <section class="card">
+    <h2>Admin Login</h2>
+    <div class="row">
+      <input [(ngModel)]="username" placeholder="Username" />
+      <input [(ngModel)]="password" type="password" placeholder="Password" />
+      <button (click)="login()">Login</button>
+    </div>
+    <p>{{ message }}</p>
+  </section>
 
-  <label>
-    Sprache
-    <select [(ngModel)]="language">
-      <option value="de">Deutsch</option>
-      <option value="en">Englisch</option>
-      <option value="fr">Französisch</option>
-      <option value="es">Spanisch</option>
-      <option value="it">Italienisch</option>
-    </select>
-  </label>
+  <section class="card">
+    <h2>Discovery</h2>
+    <div class="row">
+      <input [(ngModel)]="cidr" placeholder="CIDR scope" />
+      <button (click)="runDiscovery()">Run Safe Discovery</button>
+      <button (click)="loadDevices()">Refresh Devices</button>
+      <button (click)="loadAuditLogs()">Refresh Audit Logs</button>
+    </div>
+  </section>
 
-  <label>
-    Text für die Ausgabe
-    <textarea rows="5" [(ngModel)]="text"></textarea>
-  </label>
+  <section class="card">
+    <h2>Discovered Devices</h2>
+    <table>
+      <thead><tr><th>UID</th><th>IP</th><th>Confidence</th></tr></thead>
+      <tbody>
+        <tr *ngFor="let device of devices">
+          <td>{{ device.uid }}</td>
+          <td>{{ device.ip }}</td>
+          <td>{{ device.confidence }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
 
-  <button (click)="cloneVoice()" [disabled]="loading">
-    {{ loading ? 'Klonen läuft…' : 'Stimme klonen' }}
-  </button>
-
-  <p class="error" *ngIf="error">{{ error }}</p>
-
-  <section *ngIf="outputAudioUrl" class="result">
-    <h2>Ergebnis</h2>
-    <audio [src]="outputAudioUrl" controls></audio>
+  <section class="card">
+    <h2>Recent Audit Logs</h2>
+    <ul>
+      <li *ngFor="let log of auditLogs">{{ log.action }} → {{ log.target }}</li>
+    </ul>
   </section>
 </main>
