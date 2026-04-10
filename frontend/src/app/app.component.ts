@@ -1,63 +1,65 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpClientModule, HttpHeaders } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, HttpClientModule],
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
 export class AppComponent {
   private readonly http = inject(HttpClient);
 
-  public text = 'Hallo, das ist eine geklonte Stimme.';
-  public language = 'de';
-  public audioFile?: File;
-  public outputAudioUrl?: string;
-  public loading = false;
-  public error?: string;
+  token = '';
+  username = 'admin';
+  password = 'admin123';
+  cidr = '192.168.1.0/24';
+  message = 'Login required';
+  devices: Array<{uid: string; ip: string; confidence: number}> = [];
+  auditLogs: Array<{action: string; target: string}> = [];
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.audioFile = input.files[0];
-      this.error = undefined;
-    }
+  private authHeaders(): HttpHeaders {
+    return new HttpHeaders({ Authorization: `Bearer ${this.token}` });
   }
 
-  cloneVoice(): void {
-    if (!this.audioFile) {
-      this.error = 'Bitte zuerst eine Referenz-Audio auswählen.';
-      return;
-    }
-
-    this.loading = true;
-    this.error = undefined;
-
-    const formData = new FormData();
-    formData.append('reference_audio', this.audioFile);
-    formData.append('text', this.text);
-    formData.append('language', this.language);
-
-    this.http.post('/api/clone', formData, { responseType: 'blob' }).subscribe({
-      next: (blob) => {
-        if (this.outputAudioUrl) {
-          URL.revokeObjectURL(this.outputAudioUrl);
-        }
-        this.outputAudioUrl = URL.createObjectURL(blob);
-        this.loading = false;
+  login(): void {
+    this.http.post<{access_token: string}>('/api/v1/auth/login', {
+      username: this.username,
+      password: this.password
+    }).subscribe({
+      next: (response) => {
+        this.token = response.access_token;
+        this.message = 'Authenticated as admin';
       },
-      error: (err: HttpErrorResponse) => {
-        if (err.status === 413) {
-          this.error = 'Upload zu groß (aktuelles Limit: 2 GB). Bitte Datei verkleinern oder Nginx-Limit weiter erhöhen.';
-        } else {
-          this.error = err?.error?.detail ?? 'Klonen fehlgeschlagen. Prüfe Backend-Logs.';
-        }
-        this.loading = false;
-      }
+      error: () => this.message = 'Login failed'
+    });
+  }
+
+  runDiscovery(): void {
+    this.http.post<{status: string; findings: number}>('/api/v1/discovery/jobs', {
+      scope_cidr: this.cidr,
+      dry_run: false,
+      plugins: ['mdns', 'ssdp']
+    }, { headers: this.authHeaders() }).subscribe({
+      next: (result) => this.message = `Discovery ${result.status} (${result.findings} findings)`,
+      error: () => this.message = 'Discovery failed'
+    });
+  }
+
+  loadDevices(): void {
+    this.http.get<Array<{uid: string; ip: string; confidence: number}>>('/api/v1/devices', { headers: this.authHeaders() }).subscribe({
+      next: (data) => this.devices = data,
+      error: () => this.message = 'Could not load devices'
+    });
+  }
+
+  loadAuditLogs(): void {
+    this.http.get<Array<{action: string; target: string}>>('/api/v1/audit-logs', { headers: this.authHeaders() }).subscribe({
+      next: (data) => this.auditLogs = data,
+      error: () => this.message = 'Could not load audit logs'
     });
   }
 }
