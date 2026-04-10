@@ -1,0 +1,2 @@
+-- Initial schema is managed by SQLAlchemy metadata for MVP.
+-- This file exists to document first baseline for future Alembic adoption.

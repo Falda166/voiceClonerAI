@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { HttpClient, HttpErrorResponse } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 
@@ -13,51 +13,54 @@ import { FormsModule } from '@angular/forms';
 export class AppComponent {
   private readonly http = inject(HttpClient);
 
-  public text = 'Hallo, das ist eine geklonte Stimme.';
-  public language = 'de';
-  public audioFile?: File;
-  public outputAudioUrl?: string;
-  public loading = false;
-  public error?: string;
+  token = '';
+  username = 'admin';
+  password = 'admin123!';
+  cidr = '192.168.1.0/24';
+  dryRun = true;
 
-  onFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    if (input.files && input.files.length > 0) {
-      this.audioFile = input.files[0];
-      this.error = undefined;
-    }
+  devices: any[] = [];
+  recommendations: any[] = [];
+  auditLogs: any[] = [];
+  status = 'Not connected';
+
+  login(): void {
+    this.http.post<any>('/api/v1/auth/login', { username: this.username, password: this.password }).subscribe({
+      next: (resp) => {
+        this.token = resp.access_token;
+        this.status = 'Authenticated';
+        this.refreshAll();
+      },
+      error: () => (this.status = 'Authentication failed')
+    });
   }
 
-  cloneVoice(): void {
-    if (!this.audioFile) {
-      this.error = 'Bitte zuerst eine Referenz-Audio auswählen.';
-      return;
-    }
+  runDiscovery(): void {
+    this.http
+      .post<any>('/api/v1/discover/jobs', { cidr: this.cidr, dry_run: this.dryRun }, { headers: this.authHeaders() })
+      .subscribe({
+        next: (job) => {
+          this.http
+            .post(`/api/v1/discover/jobs/${job.id}/run`, {}, { headers: this.authHeaders() })
+            .subscribe(() => this.refreshAll());
+        },
+        error: () => (this.status = 'Discovery failed')
+      });
+  }
 
-    this.loading = true;
-    this.error = undefined;
+  approve(recommendationId: number, approved: boolean): void {
+    this.http
+      .post(`/api/v1/recommendations/${recommendationId}/approve`, { approved }, { headers: this.authHeaders() })
+      .subscribe(() => this.refreshAll());
+  }
 
-    const formData = new FormData();
-    formData.append('reference_audio', this.audioFile);
-    formData.append('text', this.text);
-    formData.append('language', this.language);
+  refreshAll(): void {
+    this.http.get<any[]>('/api/v1/discover/results', { headers: this.authHeaders() }).subscribe((x) => (this.devices = x));
+    this.http.get<any[]>('/api/v1/recommendations', { headers: this.authHeaders() }).subscribe((x) => (this.recommendations = x));
+    this.http.get<any[]>('/api/v1/audit-logs', { headers: this.authHeaders() }).subscribe((x) => (this.auditLogs = x));
+  }
 
-    this.http.post('/api/clone', formData, { responseType: 'blob' }).subscribe({
-      next: (blob) => {
-        if (this.outputAudioUrl) {
-          URL.revokeObjectURL(this.outputAudioUrl);
-        }
-        this.outputAudioUrl = URL.createObjectURL(blob);
-        this.loading = false;
-      },
-      error: (err: HttpErrorResponse) => {
-        if (err.status === 413) {
-          this.error = 'Upload zu groß (aktuelles Limit: 2 GB). Bitte Datei verkleinern oder Nginx-Limit weiter erhöhen.';
-        } else {
-          this.error = err?.error?.detail ?? 'Klonen fehlgeschlagen. Prüfe Backend-Logs.';
-        }
-        this.loading = false;
-      }
-    });
+  private authHeaders(): HttpHeaders {
+    return new HttpHeaders({ Authorization: `Bearer ${this.token}` });
   }
 }

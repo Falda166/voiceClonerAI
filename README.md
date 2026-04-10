@@ -1,33 +1,57 @@
-# VoiceClonerAI (Python + Angular + Docker)
+# OpenAutoHAB AI
 
-Dieses Projekt enthält:
+OpenAutoHAB AI is a self-hostable orchestration platform that safely bootstraps and manages openHAB automation using deterministic logic plus optional AI assistance.
 
-- **Python/FastAPI Backend** für Voice-Cloning über Coqui XTTS
-- **Angular Webapp** zum Hochladen einer Referenz-Audio und Eingeben von Text
-- **Docker Compose** für den One-Command-Start
+## What you get
 
-## Start
+- Network discovery jobs with strict CIDR limits and dry-run support.
+- Device inventory with confidence scoring and deduplication keying.
+- Recommendation engine for openHAB mappings (Thing/Item suggestions).
+- Approval workflow before any risky mutation.
+- Execution plans with preflight, snapshot, verification, and rollback metadata.
+- openHAB adapter abstraction plus HomeMatic normalization abstraction.
+- Structured audit logging, correlation IDs, and Prometheus metrics.
+- Fully local Docker Compose stack (Postgres, Redis, API, Worker, UI, openHAB).
+
+## Architecture
+
+Monorepo layout (single repo, multi-service):
+
+- `backend/` FastAPI orchestration API, deterministic validation, adapters, audit and auth.
+- `worker/` async job poller/executor process.
+- `frontend/` Angular operational UI.
+- `docs/` ADRs, architecture, deployment, security, user guides.
+- `.github/` CI and contribution templates.
+
+## Quick start
 
 ```bash
+cp .env.example .env
 docker compose up --build
 ```
 
-Dann öffnen:
+Open:
 
-- Frontend: http://localhost:8080
-- Backend Health: http://localhost:8000/api/health
+- UI: http://localhost:8080
+- API: http://localhost:8000/api/v1/health
+- Metrics: http://localhost:8000/metrics
+- openHAB: http://localhost:18080
 
-## Nutzung
+Default admin credentials (development only): `admin / admin123!`.
 
-1. Im Web-UI Referenz-Audio hochladen (WAV oder MP3).
-2. Sprache und Zieltext eingeben.
-3. **Stimme klonen** klicken.
-4. Ergebnis als Audio abspielen.
+## Safety defaults
 
-## Hinweise
+- Discovery is explicit and CIDR-bounded.
+- Dry-run is default for mutating actions.
+- Emergency stop and read-only flags are available.
+- AI output is treated as untrusted; mutations require deterministic validation and explicit approval.
 
-- Beim ersten Start lädt das Backendmodell (**xtts_v2**) herunter. Das kann dauern.
-- CPU ist möglich, aber langsam. Für bessere Performance GPU-Setup verwenden.
-- Nur Audio verwenden, für das du die Rechte hast.
-- Das Backend konvertiert Uploads per `ffmpeg` nach WAV (24kHz/Mono), damit auch MP3 stabil funktioniert.
-- Frontend-Nginx akzeptiert Uploads bis **2 GB** (`client_max_body_size 2g`). Wenn du weiterhin 413 bekommst: neu bauen mit `docker compose up --build --force-recreate`.
+## Developer workflow
+
+```bash
+make bootstrap
+make test
+make lint
+```
+
+See `docs/` for architecture, threat model, and release checklist.

@@ -1,36 +1,53 @@
 <main class="container">
-  <h1>🎙️ Voice Cloner</h1>
-  <p>Lade ein Sprachbeispiel hoch und erzeuge daraus eine neue Aufnahme mit eigenem Text.</p>
+  <h1>OpenAutoHAB AI</h1>
+  <p class="subtitle">Safe AI-assisted openHAB orchestration with approvals, dry-run, and auditability.</p>
 
-  <label>
-    Referenz-Audio (WAV/MP3)
-    <input type="file" accept="audio/*" (change)="onFileSelected($event)">
-  </label>
+  <section class="card">
+    <h2>1) Authentication</h2>
+    <div class="grid">
+      <input [(ngModel)]="username" placeholder="Username" />
+      <input [(ngModel)]="password" placeholder="Password" type="password" />
+      <button (click)="login()">Login</button>
+    </div>
+    <p>{{ status }}</p>
+  </section>
 
-  <label>
-    Sprache
-    <select [(ngModel)]="language">
-      <option value="de">Deutsch</option>
-      <option value="en">Englisch</option>
-      <option value="fr">Französisch</option>
-      <option value="es">Spanisch</option>
-      <option value="it">Italienisch</option>
-    </select>
-  </label>
+  <section class="card">
+    <h2>2) Discovery</h2>
+    <div class="grid">
+      <input [(ngModel)]="cidr" placeholder="CIDR" />
+      <label><input type="checkbox" [(ngModel)]="dryRun" /> Dry-run</label>
+      <button (click)="runDiscovery()">Run discovery</button>
+    </div>
+  </section>
 
-  <label>
-    Text für die Ausgabe
-    <textarea rows="5" [(ngModel)]="text"></textarea>
-  </label>
+  <section class="card">
+    <h2>Discovered devices</h2>
+    <table>
+      <tr><th>ID</th><th>Key</th><th>IP</th><th>Protocol</th><th>Confidence</th></tr>
+      <tr *ngFor="let d of devices"><td>{{ d.id }}</td><td>{{ d.stable_key }}</td><td>{{ d.ip_address }}</td><td>{{ d.protocol }}</td><td>{{ d.confidence }}</td></tr>
+    </table>
+  </section>
 
-  <button (click)="cloneVoice()" [disabled]="loading">
-    {{ loading ? 'Klonen läuft…' : 'Stimme klonen' }}
-  </button>
+  <section class="card">
+    <h2>Recommended mappings</h2>
+    <table>
+      <tr><th>ID</th><th>Kind</th><th>Proposal</th><th>Confidence</th><th>Status</th><th>Actions</th></tr>
+      <tr *ngFor="let r of recommendations">
+        <td>{{ r.id }}</td><td>{{ r.kind }}</td><td>{{ r.proposal | json }}</td><td>{{ r.confidence }}</td><td>{{ r.status }}</td>
+        <td>
+          <button (click)="approve(r.id, true)">Approve</button>
+          <button (click)="approve(r.id, false)">Reject</button>
+        </td>
+      </tr>
+    </table>
+  </section>
 
-  <p class="error" *ngIf="error">{{ error }}</p>
-
-  <section *ngIf="outputAudioUrl" class="result">
-    <h2>Ergebnis</h2>
-    <audio [src]="outputAudioUrl" controls></audio>
+  <section class="card">
+    <h2>Audit logs</h2>
+    <table>
+      <tr><th>ID</th><th>Actor</th><th>Action</th><th>Resource</th><th>Correlation</th></tr>
+      <tr *ngFor="let a of auditLogs"><td>{{ a.id }}</td><td>{{ a.actor }}</td><td>{{ a.action }}</td><td>{{ a.resource }}</td><td>{{ a.correlation_id }}</td></tr>
+    </table>
   </section>
 </main>

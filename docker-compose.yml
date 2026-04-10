@@ -1,24 +1,76 @@
 services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: oah
+      POSTGRES_PASSWORD: oah
+      POSTGRES_DB: oah
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U oah -d oah"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  redis:
+    image: redis:7-alpine
+    command: ["redis-server", "--appendonly", "yes"]
+    volumes:
+      - redis_data:/data
+
   backend:
     build:
       context: ./backend
-    container_name: voice-cloner-backend
+    environment:
+      OAH_DATABASE_URL: postgresql+psycopg://oah:oah@postgres:5432/oah
+      OAH_REDIS_URL: redis://redis:6379/0
+      OAH_OPENHAB_URL: http://openhab:8080
+      OAH_JWT_SECRET: change-me-in-prod
+      OAH_DISCOVERY_MAX_HOSTS: 512
+      OAH_DISCOVERY_DRY_RUN_DEFAULT: "true"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_started
     ports:
       - "8000:8000"
+
+  worker:
+    build:
+      context: ./worker
     environment:
-      - OUTPUT_DIR=/tmp/outputs
-      - VOICE_MODEL=tts_models/multilingual/multi-dataset/xtts_v2
-    volumes:
-      - voice_outputs:/tmp/outputs
+      OAH_DATABASE_URL: postgresql+psycopg://oah:oah@postgres:5432/oah
+    depends_on:
+      postgres:
+        condition: service_healthy
 
   frontend:
     build:
       context: ./frontend
-    container_name: voice-cloner-frontend
     depends_on:
       - backend
     ports:
       - "8080:80"
 
+  openhab:
+    image: openhab/openhab:4.2.3
+    environment:
+      USER_ID: "9001"
+      GROUP_ID: "9001"
+      CRYPTO_POLICY: unlimited
+      OPENHAB_HTTP_PORT: "8080"
+    ports:
+      - "18080:8080"
+    volumes:
+      - openhab_conf:/openhab/conf
+      - openhab_userdata:/openhab/userdata
+      - openhab_addons:/openhab/addons
+
 volumes:
-  voice_outputs:
+  pg_data:
+  redis_data:
+  openhab_conf:
+  openhab_userdata:
+  openhab_addons:
